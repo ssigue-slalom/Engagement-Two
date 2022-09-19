@@ -1,0 +1,179 @@
+name: "Push - Terraform"
+
+on:
+  push: #lets a workflow run on and branch
+    branches-ignore:
+      - dev
+      - stage
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform-dev:
+    name: "Push - Terraform Dev"
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      AWS_ENV: preprod
+      AWS_ZONE: dev
+      AWS_REGION: eu-west-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-session-name: GitHubDatabricksWorkspacesDev
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2.0.0
+
+      - name: Terraform Init Dev
+        id: init
+        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -recursive -check -diff -write=false
+
+      - name: Terraform Validate
+        id: validate
+        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make validate
+
+      - name: Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          check: CKV_AWS_1,CKV_AWS_3,CKV_AWS_7,CKV_AWS_8,CKV_AWS_9,CKV_AWS_10,CKV_AWS_11,CKV_AWS_12,CKV_AWS_13,CKV_AWS_14,CKV_AWS_15,CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19,CKV_AWS_20,CKV_AWS_23,CKV_AWS_24,CKV_AWS_25,CKV_AWS_33,CKV_AWS_35,CKV_AWS_36,CKV_AWS_40,CKV_AWS_41,CKV_AWS_45,CKV_AWS_46,CKV_AWS_53,CKV_AWS_54,CKV_AWS_55,CKV_AWS_56,CKV_AWS_57,CKV_AWS_60,CKV_AWS_61,CKV_AWS_62,CKV_AWS_63,CKV_AWS_70,CKV_AWS_88,CKV_AWS_93,CKV_AWS_130,CKV_AWS_229,CKV_AWS_230,CKV_AWS_231,CKV_AWS_232,CKV2_AWS_1,CKV2_AWS_2,CKV2_AWS_6
+          # Removed CKV2_AWS_5 - SG is attached to Databricks
+          quiet: true
+          soft_fail: false
+          framework: terraform
+          output_format: github_failed_only # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif.
+
+      - name: Terraform Plan Dev
+        id: plan
+        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make plan
+        # continue-on-error: true
+
+      # - name: Terraform Plan Status
+      #   if: steps.plan.outcome == 'failure'
+      #   run: exit 1
+
+  terraform-stage:
+    needs: terraform-dev
+    name: "Push - Terraform Stage"
+    runs-on: ubuntu-latest
+    environment: stage
+    env:
+      AWS_ENV: preprod
+      AWS_ZONE: stage
+      AWS_REGION: eu-west-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-session-name: GitHubDatabricksWorkspacesStage
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2.0.0
+
+      - name: Terraform Init Stage
+        id: init
+        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -recursive -check -diff -write=false
+
+      - name: Terraform Validate
+        id: validate
+        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make validate
+
+      - name: Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          check: CKV_AWS_1,CKV_AWS_3,CKV_AWS_7,CKV_AWS_8,CKV_AWS_9,CKV_AWS_10,CKV_AWS_11,CKV_AWS_12,CKV_AWS_13,CKV_AWS_14,CKV_AWS_15,CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19,CKV_AWS_20,CKV_AWS_23,CKV_AWS_24,CKV_AWS_25,CKV_AWS_33,CKV_AWS_35,CKV_AWS_36,CKV_AWS_40,CKV_AWS_41,CKV_AWS_45,CKV_AWS_46,CKV_AWS_53,CKV_AWS_54,CKV_AWS_55,CKV_AWS_56,CKV_AWS_57,CKV_AWS_60,CKV_AWS_61,CKV_AWS_62,CKV_AWS_63,CKV_AWS_70,CKV_AWS_88,CKV_AWS_93,CKV_AWS_130,CKV_AWS_229,CKV_AWS_230,CKV_AWS_231,CKV_AWS_232,CKV2_AWS_1,CKV2_AWS_2,CKV2_AWS_6
+          # Removed CKV2_AWS_5 - SG is attached to Databricks
+          quiet: true
+          soft_fail: false
+          framework: terraform
+          output_format: github_failed_only # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif.
+
+      - name: Terraform Plan Stage
+        id: plan
+        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make plan
+        # continue-on-error: true
+
+      # - name: Terraform Plan Status
+      #   if: steps.plan.outcome == 'failure'
+      #   run: exit 1
+
+  terraform-prod:
+    needs: terraform-stage
+    name: "Push - Terraform Prod"
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      AWS_ENV: prod
+      AWS_ZONE: prod
+      AWS_REGION: eu-west-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-session-name: GitHubDatabricksWorkspacesProd
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2.0.0
+
+      - name: Terraform Init Prod
+        id: init
+        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -recursive -check -diff -write=false
+
+      - name: Terraform Validate
+        id: validate
+        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make validate
+
+      - name: Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          check: CKV_AWS_1,CKV_AWS_3,CKV_AWS_7,CKV_AWS_8,CKV_AWS_9,CKV_AWS_10,CKV_AWS_11,CKV_AWS_12,CKV_AWS_13,CKV_AWS_14,CKV_AWS_15,CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19,CKV_AWS_20,CKV_AWS_23,CKV_AWS_24,CKV_AWS_25,CKV_AWS_33,CKV_AWS_35,CKV_AWS_36,CKV_AWS_40,CKV_AWS_41,CKV_AWS_45,CKV_AWS_46,CKV_AWS_53,CKV_AWS_54,CKV_AWS_55,CKV_AWS_56,CKV_AWS_57,CKV_AWS_60,CKV_AWS_61,CKV_AWS_62,CKV_AWS_63,CKV_AWS_70,CKV_AWS_88,CKV_AWS_93,CKV_AWS_130,CKV_AWS_229,CKV_AWS_230,CKV_AWS_231,CKV_AWS_232,CKV2_AWS_1,CKV2_AWS_2,CKV2_AWS_6
+          # Removed CKV2_AWS_5 - SG is attached to Databricks
+          quiet: true
+          soft_fail: false
+          framework: terraform
+          output_format: github_failed_only # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif.
+
+      - name: Terraform Plan Prod
+        id: plan
+        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make plan
+        # continue-on-error: true
+
+      # - name: Terraform Plan Status
+      #   if: steps.plan.outcome == 'failure'
