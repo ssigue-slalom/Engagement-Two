@@ -2,10 +2,10 @@ name: "Push - Terraform"
 
 on:
   push: #lets a workflow run on and branch
-    branches-ignore:
-      - dev
-      - stage
-      - main
+    #branches-ignore:
+     # - dev
+      #- stage
+      #- main
 
 permissions:
   id-token: write
