@@ -15,11 +15,11 @@ jobs:
   terraform-dev:
     name: "Push - Terraform Dev"
     runs-on: ubuntu-latest
-    environment: dev
-    env:
-      AWS_ENV: preprod
-      AWS_ZONE: dev
-      AWS_REGION: eu-west-1
+    #environment: dev
+    #env:
+    #  AWS_ENV: preprod
+    #  AWS_ZONE: dev
+    #  AWS_REGION: eu-west-1
     steps:
       - name: Checkout
         uses: actions/checkout@v3
