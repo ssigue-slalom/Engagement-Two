@@ -29,7 +29,8 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-session-name: GitHubDatabricksWorkspacesDev
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: us-east-1
+          #aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2.0.0
