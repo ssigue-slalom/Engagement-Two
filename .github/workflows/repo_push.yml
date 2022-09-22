@@ -57,10 +57,10 @@ jobs:
           directory: .
           check: CKV_AWS_1,CKV_AWS_3,CKV_AWS_7,CKV_AWS_8,CKV_AWS_9,CKV_AWS_10,CKV_AWS_11,CKV_AWS_12,CKV_AWS_13,CKV_AWS_14,CKV_AWS_15,CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19,CKV_AWS_20,CKV_AWS_23,CKV_AWS_24,CKV_AWS_25,CKV_AWS_33,CKV_AWS_35,CKV_AWS_36,CKV_AWS_40,CKV_AWS_41,CKV_AWS_45,CKV_AWS_46,CKV_AWS_53,CKV_AWS_54,CKV_AWS_55,CKV_AWS_56,CKV_AWS_57,CKV_AWS_60,CKV_AWS_61,CKV_AWS_62,CKV_AWS_63,CKV_AWS_70,CKV_AWS_88,CKV_AWS_93,CKV_AWS_130,CKV_AWS_229,CKV_AWS_230,CKV_AWS_231,CKV_AWS_232,CKV2_AWS_1,CKV2_AWS_2,CKV2_AWS_6
           # Removed CKV2_AWS_5 - SG is attached to Databricks
-          quiet: true
-          soft_fail: false
-          framework: terraform
-          output_format: github_failed_only # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif.
+          #quiet: true
+          #soft_fail: false
+          #framework: terraform
+          #output_format: github_failed_only # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif.
 
       - name: Terraform Plan Dev
         id: plan
