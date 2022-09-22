@@ -39,7 +39,7 @@ jobs:
 
       - name: Terraform Init Dev
         id: init
-        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make
+        run: terraform init
 
       - name: Terraform Format
         id: fmt
