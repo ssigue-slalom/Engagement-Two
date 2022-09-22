@@ -7,7 +7,7 @@ on:
       - edited
       - reopened
     branches:
-      - dev
+      - main
 
 permissions:
   id-token: write
@@ -18,11 +18,13 @@ jobs:
   terraform-dev:
     name: "Terraform - Dev PR"
     runs-on: ubuntu-latest
-    environment: dev
     env:
-      AWS_ENV: preprod
-      AWS_ZONE: dev
-      AWS_REGION: eu-west-1
+      ZONE: dev
+    #environment: dev
+    #env:
+    #  AWS_ENV: preprod
+    #  AWS_ZONE: dev
+    #  AWS_REGION: eu-west-1
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -30,24 +32,25 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-to-assume: arn:aws:iam::740098173666:role/Github_Connection
           role-session-name: GitHubDatabricksWorkspacesPRDev
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: us-east-1
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2.0.0
 
       - name: Terraform Init
         id: init
-        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make
+        run: terraform init
 
       - name: Terraform Format
         id: fmt
         run: terraform fmt -recursive -check -diff -write=false
+        continue-on-error: true
 
       - name: Terraform Validate
         id: validate
-        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make validate
+        run: terraform validate -no-color
 
       - name: Checkov
         id: checkov
@@ -55,15 +58,16 @@ jobs:
         with:
           directory: .
           check: CKV_AWS_1,CKV_AWS_3,CKV_AWS_7,CKV_AWS_8,CKV_AWS_9,CKV_AWS_10,CKV_AWS_11,CKV_AWS_12,CKV_AWS_13,CKV_AWS_14,CKV_AWS_15,CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19,CKV_AWS_20,CKV_AWS_23,CKV_AWS_24,CKV_AWS_25,CKV_AWS_33,CKV_AWS_35,CKV_AWS_36,CKV_AWS_40,CKV_AWS_41,CKV_AWS_45,CKV_AWS_46,CKV_AWS_53,CKV_AWS_54,CKV_AWS_55,CKV_AWS_56,CKV_AWS_57,CKV_AWS_60,CKV_AWS_61,CKV_AWS_62,CKV_AWS_63,CKV_AWS_70,CKV_AWS_88,CKV_AWS_93,CKV_AWS_130,CKV_AWS_229,CKV_AWS_230,CKV_AWS_231,CKV_AWS_232,CKV2_AWS_1,CKV2_AWS_2,CKV2_AWS_6
+          soft_fail: true
           # Removed CKV2_AWS_5 - SG is attached to Databricks
-          quiet: true
-          soft_fail: false
-          framework: terraform
-          output_format: github_failed_only # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif.
+          #quiet: true
+          #soft_fail: false
+          #framework: terraform
+          #output_format: github_failed_only # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif.
 
       - name: Terraform Plan Dev
         id: plan
-        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make plan
+        run: terraform plan -var zone=${{ env.ZONE }} -no-color -input=false
 
       # This is not working: bad request - Unhandled error: HttpError: Bad credentials
       - uses: actions/github-script@v6
@@ -78,6 +82,11 @@ jobs:
             #### Terraform Format ⚙️\`${{ steps.fmt.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            <details><summary>Show Plan</summary>
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+            </details>
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
