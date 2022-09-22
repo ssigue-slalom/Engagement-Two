@@ -48,7 +48,7 @@ jobs:
 
       - name: Terraform Validate
         id: validate
-        run: ENV=$AWS_ENV ZONE=$AWS_ZONE make validate
+        run: terraform validate -no-color
 
       - name: Checkov
         id: checkov
