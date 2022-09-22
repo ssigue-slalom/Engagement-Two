@@ -7,7 +7,7 @@ on:
       - edited
       - reopened
     branches:
-      - dev
+      - main
 
 permissions:
   id-token: write
