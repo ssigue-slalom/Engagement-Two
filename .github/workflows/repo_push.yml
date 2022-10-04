@@ -33,7 +33,7 @@ jobs:
         with:
           #role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
-          role-session-name: GitHubDatabricksWorkspacesDev
+          role-session-name: ${{ secrets.AWS_ASSUME_ROLE_NAME }}
           aws-region: ${{ env.AWS_REGION }} 
           
       - name: Setup Terraform
