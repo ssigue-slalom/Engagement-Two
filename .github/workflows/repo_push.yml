@@ -31,7 +31,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           #role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
-          role-to-assume: arn:aws:iam::740098173666:role/Github_Connection
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-session-name: GitHubDatabricksWorkspacesDev
           aws-region: us-east-1
           #aws-region: ${{ env.AWS_REGION }}
