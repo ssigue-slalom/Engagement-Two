@@ -18,7 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ZONE: dev
-    #environment: dev
+      AWS_REGION: us-east-1
+    environment: dev
     #env:
     #  AWS_ENV: preprod
     #  AWS_ZONE: dev
@@ -33,9 +34,8 @@ jobs:
           #role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-session-name: GitHubDatabricksWorkspacesDev
-          aws-region: us-east-1
-          #aws-region: ${{ env.AWS_REGION }}
-
+          aws-region: ${{ env.AWS_REGION }} 
+          
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2.0.0
 
