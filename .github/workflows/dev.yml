@@ -23,11 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ZONE: dev
-    #environment: dev
-    #env:
-    #  AWS_ENV: preprod
-    #  AWS_ZONE: dev
-    #  AWS_REGION: eu-west-1
+      AWS_REGION: us-east-1
+    environment: dev
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -35,9 +32,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::740098173666:role/Github_Connection
-          role-session-name: GitHubDatabricksWorkspacesPRDev
-          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-session-name: ${{ secrets.AWS_ASSUME_ROLE_NAME }}
+          aws-region: ${{ env.AWS_REGION }} 
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2.0.0
