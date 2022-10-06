@@ -15,7 +15,7 @@ on:
 #workflow is run when a commit is made to main
   push:
     branches:
-      - main
+      - dev
 #lines 20-23 are required in order to use OIDC role: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services#updating-your-github-actions-workflow
 permissions:
   id-token: write
