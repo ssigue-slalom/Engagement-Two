@@ -1,5 +1,9 @@
+#the purpose of this workflow is to output a plan when a PR is made and 
+#create infrastructre in AWS with a terraform apply when a merge is done to the main branch
+
 name: "Terraform - Dev PR"
 
+# workflow is run when a PR is opened, edited, or reopened with the intent to merge to main
 on:
   pull_request:
     types:
@@ -8,10 +12,11 @@ on:
       - reopened
     branches:
       - main
+#workflow is run when a commit is made to main
   push:
     branches:
       - main
-
+#lines 20-23 are required in order to use OIDC role: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services#updating-your-github-actions-workflow
 permissions:
   id-token: write
   contents: read
@@ -21,9 +26,12 @@ jobs:
   terraform-dev:
     name: "Terraform - Dev PR"
     runs-on: ubuntu-latest
+    #env sets global environment variables throughout the workflow. 
+    #If variable is set in a step it will not be kept in memory after step is executed
     env:
       ZONE: dev
       AWS_REGION: us-east-1
+    #in the settings of this repository an environment has been created that stores secrets
     environment: dev
     steps:
       - name: Checkout
@@ -32,7 +40,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
+          #role to assume is the arn of the role I created in my AWS account
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          #session role can be named anything
           role-session-name: ${{ secrets.AWS_ASSUME_ROLE_NAME }}
           aws-region: ${{ env.AWS_REGION }} 
 
@@ -51,7 +61,9 @@ jobs:
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
-
+      
+      #Checkov is a static code analysis tool created by bridgecrew 
+      # It is used for scanning infrastructure as code (IaC) files for misconfigurations that may lead to security or compliance problems
       - name: Checkov
         id: checkov
         uses: bridgecrewio/checkov-action@master

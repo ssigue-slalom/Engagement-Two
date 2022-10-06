@@ -1,13 +1,17 @@
+#the purpose of this workflow is to run a plan for developer to see when changes are made to the terraform code 
 name: "Push - Terraform"
 
 on:
+  #workflow is run when changes are made to a branch that doesnt have the name dev, preprod, or main
+  #workflow is not run on these branches because commits should only be done on these branches through a merge
+  #branch protection is in place to prevent an edit to these branches
   push: #lets a workflow run on and branch
-    #branches-ignore:
-     # - dev
-      #- stage
-      #- main
+    branches-ignore:
+     - dev
+     - preprod
+     - main
       
-
+#lines 15-17 are required in order to use OIDC role: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services#updating-your-github-actions-workflow
 permissions:
   id-token: write
   contents: read
@@ -16,14 +20,13 @@ jobs:
   terraform-dev:
     name: "Push - Terraform Dev"
     runs-on: ubuntu-latest
+    #env sets global environment variables throughout the workflow. 
+    #If variable is set in a step it will not be kept in memory after step is executed
     env:
       ZONE: dev
       AWS_REGION: us-east-1
+    #in the settings of this repository an environment has been created that stores secrets
     environment: dev
-    #env:
-    #  AWS_ENV: preprod
-    #  AWS_ZONE: dev
-    #  AWS_REGION: eu-west-1
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -31,8 +34,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          #role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          #role to assume is the arn of the role I created in my AWS account
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          #session role can be named anything
           role-session-name: ${{ secrets.AWS_ASSUME_ROLE_NAME }}
           aws-region: ${{ env.AWS_REGION }} 
           
@@ -51,7 +55,9 @@ jobs:
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
-
+      
+      #Checkov is a static code analysis tool created by bridgecrew 
+      # It is used for scanning infrastructure as code (IaC) files for misconfigurations that may lead to security or compliance problems
       - name: Checkov
         id: checkov
         uses: bridgecrewio/checkov-action@master
