@@ -11,7 +11,7 @@ on:
       - edited
       - reopened
     branches:
-      - main
+      - dev
 #workflow is run when a commit is made to main
   push:
     branches:
