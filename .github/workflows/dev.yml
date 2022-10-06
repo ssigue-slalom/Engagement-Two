@@ -1,3 +1,4 @@
+#the purpose of this workflow is to output a plan when a PR is made and create infrastructre in AWS with a terraform apply when a merge is done to the main branch
 name: "Terraform - Dev PR"
 
 on:
