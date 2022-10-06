@@ -29,7 +29,7 @@ jobs:
     #env sets global environment variables throughout the workflow. 
     #If variable is set in a step it will not be kept in memory after step is executed
     env:
-      ZONE: dev
+      ZONE: prod
       AWS_REGION: us-east-1
     #in the settings of this repository an environment has been created that stores secrets
     environment: prod
