@@ -11,11 +11,11 @@ on:
       - edited
       - reopened
     branches:
-      - main
+      - preprod
 #workflow is run when a commit is made to main
   push:
     branches:
-      - main
+      - preprod
 #lines 20-23 are required in order to use OIDC role: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services#updating-your-github-actions-workflow
 permissions:
   id-token: write
@@ -29,10 +29,10 @@ jobs:
     #env sets global environment variables throughout the workflow. 
     #If variable is set in a step it will not be kept in memory after step is executed
     env:
-      ZONE: dev
+      ZONE: preprod
       AWS_REGION: us-east-1
     #in the settings of this repository an environment has been created that stores secrets
-    environment: prod
+    environment: preprod
     steps:
       - name: Checkout
         uses: actions/checkout@v3
