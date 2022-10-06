@@ -32,7 +32,7 @@ jobs:
       ZONE: dev
       AWS_REGION: us-east-1
     #in the settings of this repository an environment has been created that stores secrets
-    environment: dev
+    environment: prod
     steps:
       - name: Checkout
         uses: actions/checkout@v3
